@@ -83,7 +83,7 @@ def delete_post(id: int):
     if index is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
-    
+
     my_posts.pop(index)
     # return {"message": f"post {id} was successfully deleted"}
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -101,3 +101,5 @@ async def update_post(id: int, post: Post):
     post_dict['id'] = id
     my_posts[index] = post_dict
     return {"data": post_dict}
+
+# for documentation go to /docs or /redoc
