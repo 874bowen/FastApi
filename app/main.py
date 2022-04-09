@@ -20,9 +20,9 @@ class Post(BaseModel):
 
 while True:
     try:
-        conn = psycopg2.connect(host='localhost', database='fastapi', user='bowen2',
-                                password='secret2', cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
+        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres',
+                                password='123Bowen', cursor_factory=RealDictCursor)
+        curr = conn.cursor()
         print("Database connection was successful!!")
         break
 
@@ -55,7 +55,9 @@ async def root():
 
 @app.get("/posts")
 async def get_posts():
-    return {"data": my_posts}
+    curr.execute(""" SELECT * FROM posts """)
+    posts = curr.fetchall()
+    return {"data": posts}
 
 
 @app.get("/hello/{name}")
