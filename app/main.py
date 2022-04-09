@@ -87,12 +87,13 @@ def create_posts(post: Post):
     :param post:
     :return:
     """
-    post_dict = post.dict()
-    post_dict["id"] = randrange(0, 1000000)
-    my_posts.append(post_dict)
-    print(post.rating)
-    print(post.dict())
-    return {"data": post_dict}
+    # we are using variables %s because we want to avoid SQL injection
+    curr.execute(""" INSERT INTO posts (title, content, published) values (%s, %s, %s) RETURNING * """, (post.title,
+                 post.content, post.published))
+    new_post = curr.fetchone()
+    # this only does not save to the database you have to add this: commit()
+    conn.commit()
+    return {"data": new_post}
 
 
 @app.get("/posts/latest")
