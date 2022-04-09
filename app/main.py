@@ -12,6 +12,11 @@ app = FastAPI()
 
 # title str, content str, category, Bool published
 class Post(BaseModel):
+    """
+        This is going to give us a schema on how
+        the created data should look like -
+        providing validation
+    """
     title: str
     content: str
     published: bool = True  # giving it a default value
@@ -37,12 +42,19 @@ my_posts = [{"title": "title of post 1", "content": "content of post 1", "id": 1
 
 
 def find_posts(id):
+    """
+        used to find posts for delete,
+        update and retrieving individual posts purposes
+    """
     for p in my_posts:
         if p['id'] == id:
             return p
 
 
 def find_posts_index(id):
+    """:
+         used to get index
+    """
     for i, p in enumerate(my_posts):
         if p['id'] == id:
             return i
@@ -55,6 +67,9 @@ async def root():
 
 @app.get("/posts")
 async def get_posts():
+    """
+        used for retrieving all posts
+    """
     curr.execute(""" SELECT * FROM posts """)
     posts = curr.fetchall()
     return {"data": posts}
@@ -67,6 +82,11 @@ async def say_hello(name: str):
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_posts(post: Post):
+    """
+    used for creating posts
+    :param post:
+    :return:
+    """
     post_dict = post.dict()
     post_dict["id"] = randrange(0, 1000000)
     my_posts.append(post_dict)
@@ -77,12 +97,20 @@ def create_posts(post: Post):
 
 @app.get("/posts/latest")
 async def get_latest_post():
+    """
+        this function gets the last post
+    """
     post = my_posts[len(my_posts) - 1]
     return {"latest_post": post}
 
 
 @app.get("/posts/{id}")
-async def get_post(id: int, response: Response):
+async def get_post(id: int):
+    """
+    this is used to get individual post
+    :param id:
+    :return:
+    """
     print(id)
     print(type(id))
     post = find_posts(id)
@@ -96,6 +124,10 @@ async def get_post(id: int, response: Response):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
+    """:cvar
+    for deleting individual post
+    :param id:
+    """
     index = find_posts_index(id)
 
     if index is None:
@@ -109,6 +141,9 @@ def delete_post(id: int):
 
 @app.put("/posts/{id}")
 async def update_post(id: int, post: Post):
+    """:param id:
+    for updating a post
+    """
     index = find_posts_index(id)
 
     if index is None:
