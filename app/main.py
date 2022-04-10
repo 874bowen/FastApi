@@ -128,9 +128,11 @@ def delete_post(id: int):
     for deleting individual post
     :param id:
     """
-    index = find_posts_index(id)
+    curr.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id)))
+    deleted_post = curr.fetchone()
+    conn.commit()
 
-    if index is None:
+    if deleted_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
 
