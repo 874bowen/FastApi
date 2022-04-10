@@ -112,9 +112,8 @@ async def get_post(id: int):
     :param id:
     :return:
     """
-    print(id)
-    print(type(id))
-    post = find_posts(id)
+    curr.execute(""" SELECT * FROM posts WHERE id = %s""", (str(id)))
+    post = curr.fetchone()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
