@@ -136,8 +136,6 @@ def delete_post(id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
 
-    my_posts.pop(index)
-    # return {"message": f"post {id} was successfully deleted"}
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -146,15 +144,15 @@ async def update_post(id: int, post: Post):
     """:param id:
     for updating a post
     """
-    index = find_posts_index(id)
+    curr.execute(""" UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",
+                 (post.title, post.content, post.published, str(id)))
+    updated_post = curr.fetchone()
+    conn.commit()
 
-    if index is None:
+    if updated_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
 
-    post_dict = post.dict()
-    post_dict['id'] = id
-    my_posts[index] = post_dict
-    return {"data": post_dict}
+    return {"data": updated_post}
 
 # for documentation go to /docs or /redoc
