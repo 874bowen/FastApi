@@ -94,6 +94,7 @@ def create_posts(post: Post, db: Session = Depends(get_db)):
     """
     used for creating posts
     :param post:
+    :param db:
     :return:
     """
     # we are using variables %s because we want to avoid SQL injection
@@ -119,19 +120,21 @@ async def get_latest_post():
 
 
 @app.get("/posts/{id}")
-async def get_post(id: int):
+async def get_post(id: int, db: Session = Depends(get_db)):
     """
     this is used to get individual post
     :param id:
+    :param db:
     :return:
     """
-    curr.execute(""" SELECT * FROM posts WHERE id = %s""", (str(id)))
-    post = curr.fetchone()
+    # curr.execute(""" SELECT * FROM posts WHERE id = %s""", (str(id)))
+    # post = curr.fetchone()
+    # .first is used for getting just one not wasting postgreSQL resources by using .all()
+    post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
-        # response.status_code = status.HTTP_404_NOT_FOUND
-        # return {"message": f"post with id {id} was not found"}
+
     return {"post_detail": post}
 
 
