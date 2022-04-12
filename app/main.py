@@ -159,19 +159,24 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/posts/{id}")
-async def update_post(id: int, post: Post):
-    """:param id:
+async def update_post(id: int, post: Post, db: Session = Depends(get_db)):
+    """    :param post: 
+    :param id:
+    :param db:
     for updating a post
     """
-    curr.execute(""" UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",
-                 (post.title, post.content, post.published, str(id)))
-    updated_post = curr.fetchone()
-    conn.commit()
-
-    if updated_post is None:
+    # curr.execute(""" UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",
+    #              (post.title, post.content, post.published, str(id)))
+    # updated_post = curr.fetchone()
+    # conn.commit()
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post_to_be_updated = post_query.first()
+    if post_to_be_updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
-
-    return {"data": updated_post}
+    
+    post_query.update(post.dict(), synchronize_session=False)
+    db.commit()
+    return {"data": post_query.first()}
 
 # for documentation go to /docs or /redoc
