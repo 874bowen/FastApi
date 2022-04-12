@@ -2,12 +2,19 @@ import time
 from random import randrange
 from typing import Optional
 
-from fastapi import FastAPI, Body, Response, status, HTTPException
+from fastapi import FastAPI, Body, Response, status, HTTPException, Depends
 from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from sqlalchemy.orm import Session
+
+from . import models
+from .database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 
 
 # title str, content str, category, Bool published
@@ -60,18 +67,20 @@ def find_posts_index(id):
             return i
 
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to my API"}
+@app.get("/sqlalchemy")
+async def root(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return {"message": posts}
 
 
 @app.get("/posts")
-async def get_posts():
+async def get_posts(db: Session = Depends(get_db)):
     """
         used for retrieving all posts
     """
-    curr.execute(""" SELECT * FROM posts """)
-    posts = curr.fetchall()
+    # curr.execute(""" SELECT * FROM posts """)
+    # posts = curr.fetchall()
+    posts = db.query(models.Post).all()
     return {"data": posts}
 
 
@@ -89,7 +98,8 @@ def create_posts(post: Post):
     """
     # we are using variables %s because we want to avoid SQL injection
     curr.execute(""" INSERT INTO posts (title, content, published) values (%s, %s, %s) RETURNING * """, (post.title,
-                 post.content, post.published))
+                                                                                                         post.content,
+                                                                                                         post.published))
     new_post = curr.fetchone()
     # this only does not save to the database you have to add this: commit()
     conn.commit()
