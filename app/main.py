@@ -27,7 +27,7 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True  # giving it a default value
-    rating: Optional[int] = None  # fully optional field
+    # rating: Optional[int] = None  # fully optional field
 
 
 while True:
@@ -90,19 +90,22 @@ async def say_hello(name: str):
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post):
+def create_posts(post: Post, db: Session = Depends(get_db)):
     """
     used for creating posts
     :param post:
     :return:
     """
     # we are using variables %s because we want to avoid SQL injection
-    curr.execute(""" INSERT INTO posts (title, content, published) values (%s, %s, %s) RETURNING * """, (post.title,
-                                                                                                         post.content,
-                                                                                                         post.published))
-    new_post = curr.fetchone()
+    # curr.execute(""" INSERT INTO posts (title, content, published) values (%s, %s, %s) RETURNING * """, (post.title,
+    # new_post = curr.fetchone()
     # this only does not save to the database you have to add this: commit()
-    conn.commit()
+    # conn.commit()
+    # print(**post.dict())
+    new_post = models.Post(**post.dict())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
     return {"data": new_post}
 
 
