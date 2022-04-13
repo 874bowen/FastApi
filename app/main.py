@@ -1,34 +1,18 @@
 import time
-from random import randrange
-from typing import Optional
-
-from fastapi import FastAPI, Body, Response, status, HTTPException, Depends
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 
-from . import models
+from . import models, schemas, utils
 from .database import engine, get_db
+
+# specifying the hashing algorithm - bcrypt
+from .routers import post, user, auth
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-
-
-# title str, content str, category, Bool published
-class Post(BaseModel):
-    """
-        This is going to give us a schema on how
-        the created data should look like -
-        providing validation
-    """
-    title: str
-    content: str
-    published: bool = True  # giving it a default value
-    # rating: Optional[int] = None  # fully optional field
-
 
 while True:
     try:
@@ -43,6 +27,12 @@ while True:
         print("Error: ", error)
         time.sleep(2)
 
+app.include_router(post.router)
+app.include_router(user.router)
+app.include_router(auth.router)
+
+
+# for testing purposes
 # our database as of now
 my_posts = [{"title": "title of post 1", "content": "content of post 1", "id": 1},
             {"title": "favorite food", "content": "I like Chapati", "id": 2}]
@@ -73,41 +63,9 @@ async def root(db: Session = Depends(get_db)):
     return {"message": posts}
 
 
-@app.get("/posts")
-async def get_posts(db: Session = Depends(get_db)):
-    """
-        used for retrieving all posts
-    """
-    # curr.execute(""" SELECT * FROM posts """)
-    # posts = curr.fetchall()
-    posts = db.query(models.Post).all()
-    return {"data": posts}
-
-
 @app.get("/hello/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
-
-
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post, db: Session = Depends(get_db)):
-    """
-    used for creating posts
-    :param post:
-    :param db:
-    :return:
-    """
-    # we are using variables %s because we want to avoid SQL injection
-    # curr.execute(""" INSERT INTO posts (title, content, published) values (%s, %s, %s) RETURNING * """, (post.title,
-    # new_post = curr.fetchone()
-    # this only does not save to the database you have to add this: commit()
-    # conn.commit()
-    # print(**post.dict())
-    new_post = models.Post(**post.dict())
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    return {"data": new_post}
 
 
 @app.get("/posts/latest")
@@ -117,66 +75,5 @@ async def get_latest_post():
     """
     post = my_posts[len(my_posts) - 1]
     return {"latest_post": post}
-
-
-@app.get("/posts/{id}")
-async def get_post(id: int, db: Session = Depends(get_db)):
-    """
-    this is used to get individual post
-    :param id:
-    :param db:
-    :return:
-    """
-    # curr.execute(""" SELECT * FROM posts WHERE id = %s""", (str(id)))
-    # post = curr.fetchone()
-    # .first is used for getting just one not wasting postgreSQL resources by using .all()
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id {id} was not found")
-
-    return {"post_detail": post}
-
-
-@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
-    """:cvar
-    for deleting individual post
-    :param id:
-    :param db:
-    """
-    # curr.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id)))
-    # deleted_post = curr.fetchone()
-    # conn.commit()
-    post = db.query(models.Post).filter(models.Post.id == id)
-
-    if post.first() is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id {id} was not found")
-    post.delete(synchronize_session=False)
-    db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@app.put("/posts/{id}")
-async def update_post(id: int, post: Post, db: Session = Depends(get_db)):
-    """    :param post: 
-    :param id:
-    :param db:
-    for updating a post
-    """
-    # curr.execute(""" UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",
-    #              (post.title, post.content, post.published, str(id)))
-    # updated_post = curr.fetchone()
-    # conn.commit()
-    post_query = db.query(models.Post).filter(models.Post.id == id)
-    post_to_be_updated = post_query.first()
-    if post_to_be_updated is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id {id} was not found")
-    
-    post_query.update(post.dict(), synchronize_session=False)
-    db.commit()
-    return {"data": post_query.first()}
 
 # for documentation go to /docs or /redoc
