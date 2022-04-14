@@ -4,9 +4,8 @@ from typing import List
 from fastapi import FastAPI, Body, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 
-from app import schemas, models, utils
+from app import schemas, models, utils, oauth2
 from ..database import get_db
-
 
 router = APIRouter(
     prefix="/posts",
@@ -15,9 +14,11 @@ router = APIRouter(
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
-def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
+                 get_current_user: int = Depends(oauth2.get_current_user)):
     """
     used to CREATE posts
+    :param get_current_user:
     :param post:
     :param db:
     :return:
@@ -88,8 +89,11 @@ async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(g
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
-    """:cvar
+def delete_post(id: int, db: Session = Depends(get_db),
+                get_current_user: int = Depends(oauth2.get_current_user)):
+    """
+    :param get_current_user:
+    :cvar
     for to DELETE an individual post
     :param id:
     :param db:
