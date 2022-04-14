@@ -67,8 +67,10 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=schemas.Post)
-async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
-    """    :param post:
+async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db),
+                      get_current_user: int = Depends(oauth2.get_current_user)):
+    """    :param get_current_user:
+    :param post:
     :param id:
     :param db:
     for updating a post
