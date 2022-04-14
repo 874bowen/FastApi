@@ -20,12 +20,12 @@ SECRET_KEY = "Svj/QuHTMLI42ywAHAS9MmX63mAFP8+0NUB0B5bmKcM="
 # Algorithm
 ALGORITHM = "HS256"
 # Expiration time
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
 
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now()+timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
