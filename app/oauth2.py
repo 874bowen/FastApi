@@ -23,7 +23,7 @@ SECRET_KEY = "Svj/QuHTMLI42ywAHAS9MmX63mAFP8+0NUB0B5bmKcM="
 # Algorithm
 ALGORITHM = "HS256"
 # Expiration time
-ACCESS_TOKEN_EXPIRE_MINUTES = 1
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def create_access_token(data: dict):
