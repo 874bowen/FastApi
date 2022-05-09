@@ -15,10 +15,10 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
-                 get_current_user: int = Depends(oauth2.get_current_user)):
+                 current_user=Depends(oauth2.get_current_user)):
     """
     used to CREATE posts
-    :param get_current_user:
+    :param current_user:
     :param post:
     :param db:
     :return:
@@ -29,6 +29,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
     # this only does not save to the database you have to add this: commit()
     # conn.commit()
     # print(**post.dict())
+    print(current_user)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
