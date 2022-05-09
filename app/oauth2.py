@@ -2,6 +2,9 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, Depends
+from sqlalchemy.orm import Session
+
+from . import database, models, schemas
 
 # SECRET KEY
 # openssl rand -hex 32
