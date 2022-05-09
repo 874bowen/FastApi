@@ -96,9 +96,9 @@ async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(g
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db),
-                get_current_user: int = Depends(oauth2.get_current_user)):
+                current_user: int = Depends(oauth2.get_current_user)):
     """
-    :param get_current_user:
+    :param current_user:
     :cvar
     for to DELETE an individual post
     :param id:
