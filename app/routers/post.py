@@ -69,8 +69,9 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 @router.put("/{id}", response_model=schemas.Post)
 async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db),
-                      get_current_user: int = Depends(oauth2.get_current_user)):
-    """    :param get_current_user:
+                      current_user: int = Depends(oauth2.get_current_user)):
+    """
+    :param current_user:
     :param post:
     :param id:
     :param db:
@@ -80,6 +81,8 @@ async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(g
     #              (post.title, post.content, post.published, str(id)))
     # updated_post = curr.fetchone()
     # conn.commit()
+    print(type(current_user))
+    print('this is', current_user.email)
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post_to_be_updated = post_query.first()
     if post_to_be_updated is None:
