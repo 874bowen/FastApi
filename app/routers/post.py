@@ -38,7 +38,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
 
 
 @router.get("/", response_model=List[schemas.Post])
-async def get_posts(db: Session = Depends(get_db)):
+async def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """
         used to READ all posts
     """
