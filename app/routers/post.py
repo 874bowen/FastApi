@@ -89,7 +89,8 @@ async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(g
     if post_to_be_updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
-
+    if post_to_be_updated.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform this action!")
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
