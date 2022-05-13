@@ -18,12 +18,15 @@ class PostBase(BaseModel):
     published: bool = True  # giving it a default value
 
 
+
 class PostCreate(PostBase):
     pass
 
 
 class Post(PostBase):
     id: int
+    created_at: datetime
+    owner_id: int
 
     class Config:
         orm_mode = True  # tells the pydantic model to read data even when it's not a dict
