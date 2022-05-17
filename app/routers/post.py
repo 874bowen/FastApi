@@ -45,7 +45,8 @@ async def get_posts(db: Session = Depends(get_db), current_user: int = Depends(o
     # curr.execute(""" SELECT * FROM posts """)
     # posts = curr.fetchall()
     print(current_user.email)
-    posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    # posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    posts = db.query(models.Post).all()
     return posts
 
 
